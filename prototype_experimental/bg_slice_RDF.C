@@ -5,13 +5,16 @@ class Generator_t {
     private:
         unsigned long i = 0;
     public:
-        RTensor<float> operator() (const int& batch_size, RDataFrame& x_rdf) {
+        RTensor<float> operator() (const unsigned long& batch_size, RDataFrame& x_rdf) {
             RTensor<float> x_tensor = AsTensor<float>(x_rdf, x_rdf.GetColumnNames(), MemoryLayout::RowMajor);
             auto data_len = x_tensor.GetShape()[0];
             auto num_column = x_tensor.GetShape()[1];
-            
+
+
             if(i+batch_size<data_len){
-                RTensor<float> x_batch = x_tensor.Slice({{i,i+batch_size},{0,num_column}});
+                unsigned long offset = i * batch_size * num_column;
+                RTensor<float> x_batch(x_tensor.GetData()+offset, {batch_size,num_column} );
+                // RTensor<float> x_batch = x_tensor.Slice({{i,i+batch_size},{0,num_column}});
                 i+=batch_size;
                 return x_batch;
             }
